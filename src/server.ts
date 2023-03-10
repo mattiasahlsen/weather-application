@@ -2,6 +2,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 /* eslint-disable */
+import FIVE_DAY_FORECAST from './test-data/five-day-forecast'
 import express from 'express'
 import cors from 'cors'
 /* eslint-enable */
@@ -21,6 +22,10 @@ app.use(express.json())
 
 app.get('/ping', (req, res) => {
   res.send('pong')
+})
+
+app.get('/forecast', async (req, res) => {
+  return res.json(FIVE_DAY_FORECAST)
 })
 
 app.listen(port, () => {

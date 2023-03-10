@@ -1,23 +1,38 @@
-import logo from './logo.svg'
+import React, { useEffect, useState } from 'react'
+import axios from 'axios'
 import './App.css'
 
 function App() {
+  const [forecast, setForecast] = useState(null)
+
+  async function getForecast() {
+    const response = await axios.get(
+      `http://localhost:${process.env.REACT_APP_API_PORT}/forecast`
+    )
+    console.log('response', response)
+    return response.data
+  }
+
+  useEffect(() => {
+    getForecast().then((data) => {
+      setForecast(data)
+    })
+  }, [])
+
   return (
-    <div className="App !bg-green-50">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="min-h-screen flex flex-col justify-between bg-slate-700">
+      <header className="bg-slate-100 p-4 text-lg">Weather Application</header>
+
+      <main className="container mx-auto my-4 md:my-8 lg:my-12 flex-1">
+        {forecast && (
+          <pre className="text-slate-100">
+            {JSON.stringify(forecast, null, 2)}
+          </pre>
+        )}
+      </main>
+      <footer className="bg-slate-400 flex justify-center">
+        <p className="text-slate-100 py-1">© 2021 Weather Application</p>
+      </footer>
     </div>
   )
 }
