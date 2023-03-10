@@ -1,0 +1,9 @@
+@media (min-width: 768px) {
+  .forecast-grid {
+    grid-template-columns: 80px repeat(5, minmax(0, 1fr));
+  }
+}
+
+.right-shadow {
+  box-shadow: 20px 0px 5px 0px rgba(0, 0, 0, 0.2);
+}
