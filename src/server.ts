@@ -5,6 +5,7 @@ dotenv.config()
 import FIVE_DAY_FORECAST from './test-data/five-day-forecast'
 import express from 'express'
 import cors from 'cors'
+import axios from 'axios'
 /* eslint-enable */
 
 const app = express()
@@ -25,7 +26,16 @@ app.get('/ping', (req, res) => {
 })
 
 app.get('/forecast', async (req, res) => {
-  return res.json(FIVE_DAY_FORECAST)
+  try {
+    // const resp = await axios.get(
+    //   `http://api.openweathermap.org/data/2.5/forecast?units=metric&lat=57.7089&lon=1.9746&appid=${process.env.OPEN_WEATHER_API_KEY}`
+    // )
+    // return res.json(resp.data)
+    return res.json(FIVE_DAY_FORECAST)
+  } catch (err) {
+    console.error(err)
+    return res.status(500).json({ error: 'Internal server error' })
+  }
 })
 
 app.listen(port, () => {
