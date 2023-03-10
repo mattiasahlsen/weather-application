@@ -27,11 +27,21 @@ app.get('/ping', (req, res) => {
 
 app.get('/forecast', async (req, res) => {
   try {
-    // const resp = await axios.get(
-    //   `http://api.openweathermap.org/data/2.5/forecast?units=metric&lat=57.7089&lon=1.9746&appid=${process.env.OPEN_WEATHER_API_KEY}`
-    // )
-    // return res.json(resp.data)
-    return res.json(FIVE_DAY_FORECAST)
+    const location = req.query.location
+    if (typeof location !== 'string') {
+      return res.status(400).json({ error: 'Bad request' })
+    }
+
+    const locationResp = await axios.get(
+      `http://api.openweathermap.org/geo/1.0/direct?q=${location}&appid=${process.env.OPEN_WEATHER_API_KEY}`
+    )
+
+    const { lat, lon } = locationResp.data[0]
+
+    const resp = await axios.get(
+      `http://api.openweathermap.org/data/2.5/forecast?units=metric&lat=${lat}&lon=${lon}&appid=${process.env.OPEN_WEATHER_API_KEY}`
+    )
+    return res.json(resp.data)
   } catch (err) {
     console.error(err)
     return res.status(500).json({ error: 'Internal server error' })

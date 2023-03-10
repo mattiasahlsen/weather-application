@@ -57,20 +57,29 @@ interface WeatherData {
 }
 
 function App() {
+  const [loading, setLoading] = useState<boolean>(false)
   const [forecast, setForecast] = useState<null | { list: WeatherData[] }>(null)
+  const [locationName, setLocationName] = useState<string>('Göteborg,se')
+  const [currentLocation, setCurrentLocation] = useState<string>('Göteborg,se')
 
   async function getForecast() {
-    const response = await axios.get(
-      `http://localhost:${process.env.REACT_APP_API_PORT}/forecast`
-    )
-    return response.data
+    setCurrentLocation(locationName)
+    try {
+      setLoading(true)
+      const response = await axios.get(
+        `http://localhost:${process.env.REACT_APP_API_PORT}/forecast?location=${locationName}`
+      )
+      setForecast(response.data)
+    } catch (err) {
+      console.log('err', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
-    getForecast().then((data) => {
-      setForecast(data)
-      console.log(data.list.length)
-    })
+    getForecast()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const days: WeatherData[][] = forecast
@@ -108,89 +117,113 @@ function App() {
         return acc
       }, [] as string[])
       .join(', ')})`
-  console.log('customBackgroundStyle', customBackgroundStyle)
 
   // linear-gradient(to bottom right, rgba(0, 0, 0, 0.5) 0%, rgba(255, 255, 255, 0.5) 100%),
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-slate-700">
-      <header className="bg-slate-100 p-4 text-lg">Weather Application</header>
+    <div className="min-h-screen flex flex-col justify-between bg-blue-400">
+      <header className="bg-slate-100 p-4 text-xl font-semibold">
+        Weather Application
+      </header>
 
-      <main className="container mx-auto my-4 md:my-8 lg:my-12 flex-1 text-xs p-2 md:text-base md:font-semibold">
-        {forecast && (
-          <div
-            className="grid grid-rows-6 grid-cols-6 grid-flow-row md:grid-flow-col forecast-grid h-56 md:h-auto bg-slate-200"
-            style={{
-              background: largeScreen ? customBackgroundStyle : undefined,
-            }}
-          >
-            <div className="bg-slate-100 p-1 font-bold relative z-10">Day</div>
-            <div className="bg-slate-100 p-1 font-bold z-10 relative">Mean</div>
-            <div className="bg-slate-100 p-1 font-bold">Median</div>
-            <div className="bg-slate-100 p-1 font-bold">Max</div>
-            <div className="bg-slate-100 p-1 font-bold">Min</div>
-            <div className="bg-slate-100 p-1 font-bold">Weather</div>
-
-            {days
-              .map((day, i) => {
-                const dayName = new Date(day[0].dt * 1000).toLocaleDateString(
-                  'en-US',
-                  { weekday: 'long' }
-                )
-
-                const mean =
-                  day.reduce((acc, curr) => {
-                    return acc + curr.main.temp
-                  }, 0) / day.length
-                const median = (day[3].main.temp + day[4].main.temp) / 2
-                const min = Math.min(...day.map((d) => d.main.temp))
-                const max = Math.max(...day.map((d) => d.main.temp))
-
-                return [
-                  <div className="bg-slate-100 p-1 font-bold shadow-md">
-                    {i === 0 ? 'Today' : dayName}
-                  </div>,
-                  <div className="p-1">
-                    {Math.round(mean)}
-                    {'\u00B0'}
-                  </div>,
-                  <div className="p-1">
-                    {Math.round(median)}
-                    {'\u00B0'}
-                  </div>,
-                  <div className="p-1">
-                    {Math.round(min)}
-                    {'\u00B0'}
-                  </div>,
-                  <div className="p-1">
-                    {Math.round(max)}
-                    {'\u00B0'}
-                  </div>,
-                  <div className="bg-slate-300 shadow-md p-1 flex items-start">
-                    {day.map((d, i) => (
-                      <img
-                        src={`http://openweathermap.org/img/wn/${d.weather[0].icon}.png`}
-                        alt={d.weather[0].description}
-                        className={classNames('w-4 lg:w-7', {
-                          'hidden lg:inline-block': i % 2 === 0,
-                        })}
-                        key={i}
-                      />
-                    ))}
-                  </div>,
-                ]
-              })
-              .flat()
-              .map((e, i) => {
-                return {
-                  ...e,
-                  key: i,
-                }
-              })}
+      <main className="container mx-auto my-4 md:my-8 lg:my-12 flex-1 text-xs p-4 md:text-base md:font-semibold text-slate-700">
+        <div className="mb-4">
+          <h2 className="text-lg text-white font-semibold">
+            {currentLocation}
+          </h2>
+          <div className="flex gap-x-2 items-stretch mt-1">
+            <input
+              type="text"
+              className="p-1 outline-none"
+              value={locationName}
+              onChange={(e) => setLocationName(e.target.value)}
+            />
+            <button
+              className="outline-none bg-blue-600 text-white p-1 shadow-xl inline-block font-semibold"
+              onClick={getForecast}
+            >
+              Change Location
+            </button>
           </div>
-          // <pre className="text-slate-100">
-          //   {JSON.stringify(forecast, null, 2)}
-          // </pre>
+        </div>
+
+        {loading ? (
+          <p className="text-white">Loading...</p>
+        ) : (
+          forecast && (
+            <div className="grid grid-rows-6 grid-cols-6 grid-flow-row md:grid-flow-col forecast-grid h-56 md:h-72 bg-blue-100">
+              <div className="bg-slate-100 p-1 font-bold relative z-10">
+                Day
+              </div>
+              <div className="bg-slate-100 p-1 font-bold z-10 relative">
+                Mean
+              </div>
+              <div className="bg-slate-100 p-1 font-bold">Median</div>
+              <div className="bg-slate-100 p-1 font-bold">Max</div>
+              <div className="bg-slate-100 p-1 font-bold">Min</div>
+              <div className="bg-slate-100 p-1 font-bold">Weather</div>
+
+              {days
+                .map((day, i) => {
+                  const dayName = new Date(day[0].dt * 1000).toLocaleDateString(
+                    'en-US',
+                    { weekday: 'long' }
+                  )
+
+                  const mean =
+                    day.reduce((acc, curr) => {
+                      return acc + curr.main.temp
+                    }, 0) / day.length
+                  const median = (day[3].main.temp + day[4].main.temp) / 2
+                  const min = Math.min(...day.map((d) => d.main.temp))
+                  const max = Math.max(...day.map((d) => d.main.temp))
+
+                  return [
+                    <div className="bg-slate-100 p-1 font-bold shadow-md">
+                      {i === 0 ? 'Today' : dayName}
+                    </div>,
+                    <div className="p-1">
+                      {Math.round(mean)}
+                      {'\u00B0'}
+                    </div>,
+                    <div className="p-1">
+                      {Math.round(median)}
+                      {'\u00B0'}
+                    </div>,
+                    <div className="p-1">
+                      {Math.round(min)}
+                      {'\u00B0'}
+                    </div>,
+                    <div className="p-1">
+                      {Math.round(max)}
+                      {'\u00B0'}
+                    </div>,
+                    <div className="bg-slate-300 shadow-md p-1 flex items-start">
+                      {day.map((d, i) => (
+                        <img
+                          src={`http://openweathermap.org/img/wn/${d.weather[0].icon}.png`}
+                          alt={d.weather[0].description}
+                          className={classNames('w-4 lg:w-7', {
+                            'hidden lg:inline-block': i % 2 === 0,
+                          })}
+                          key={i}
+                        />
+                      ))}
+                    </div>,
+                  ]
+                })
+                .flat()
+                .map((e, i) => {
+                  return {
+                    ...e,
+                    key: i,
+                  }
+                })}
+            </div>
+            // <pre className="text-slate-100">
+            //   {JSON.stringify(forecast, null, 2)}
+            // </pre>
+          )
         )}
       </main>
       <footer className="bg-slate-400 flex justify-center">
