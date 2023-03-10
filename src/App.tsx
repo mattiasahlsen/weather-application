@@ -126,7 +126,7 @@ function App() {
         Weather Application
       </header>
 
-      <main className="container mx-auto my-4 md:my-8 lg:my-12 flex-1 text-xs p-4 md:text-base md:font-semibold text-slate-700">
+      <main className="container mx-auto my-4 md:my-8 lg:my-12 flex-1 text-xs p-4 md:text-base font-semibold text-slate-700">
         <div className="mb-4">
           <h2 className="text-lg text-white font-semibold">
             {currentLocation}
